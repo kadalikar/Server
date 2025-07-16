@@ -32,7 +32,7 @@ router
 
 router
   .route("/:id")
-  .put(upload.single("poster"), updateMovie)
+  // .put(upload.single("poster"), updateMovie)
   .delete(deleteMovie);
 
 module.exports = router;

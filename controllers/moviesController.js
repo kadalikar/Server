@@ -45,38 +45,38 @@ exports.createMovie = async (req, res) => {
   }
 };
 
-exports.updateMovie = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, rating } = req.body;
-    const updateData = {};
+// exports.updateMovie = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { title, rating } = req.body;
+//     const updateData = {};
 
-    // Dynamic $set object (ignores undefined fields)
-    if (title !== undefined) updateData.title = title;
-    if (rating !== undefined) updateData.rating = rating;
+//     // Dynamic $set object (ignores undefined fields)
+//     if (title !== undefined) updateData.title = title;
+//     if (rating !== undefined) updateData.rating = rating;
 
-    // Handle image upload
-    if (req.file) {
-      const movie = await Movie.findById(id);
-      const { url, key } = await s3Service.updateS3Image(
-        req.file,
-        movie?.imageKey
-      );
-      updateData.imageUrl = url;
-      updateData.imageKey = key;
-    }
+//     // Handle image upload
+//     if (req.file) {
+//       const movie = await Movie.findById(id);
+//       const { url, key } = await s3Service.updateS3Image(
+//         req.file,
+//         movie?.imageKey
+//       );
+//       updateData.imageUrl = url;
+//       updateData.imageKey = key;
+//     }
 
-    const updatedMovie = await Movie.findByIdAndUpdate(
-      id,
-      { $set: updateData }, // Only updates provided fields
-      { new: true, runValidators: true }
-    );
+//     const updatedMovie = await Movie.findByIdAndUpdate(
+//       id,
+//       { $set: updateData }, // Only updates provided fields
+//       { new: true, runValidators: true }
+//     );
 
-    res.status(200).json({ success: true, data: updatedMovie });
-  } catch (err) {
-    handleUpdateError(res, err); // Reusable error handler
-  }
-};
+//     res.status(200).json({ success: true, data: updatedMovie });
+//   } catch (err) {
+//     handleUpdateError(res, err); // Reusable error handler
+//   }
+// };
 
 exports.deleteMovie = async (req, res) => {
   try {

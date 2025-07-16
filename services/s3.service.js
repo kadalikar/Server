@@ -1,16 +1,12 @@
 const s3 = require("../config/aws.config");
 const { v4: uuidv4 } = require("uuid");
-const {
-  PutObjectCommand,
-  DeleteObjectCommand,
-  S3Client,
-} = require("@aws-sdk/client-s3");
+ 
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-});
+// const s3Client = new S3Client({
+//   region: process.env.AWS_REGION,
+//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+// });
 
 class S3Service {
   static async uploadFile(file, folder = "uploads") {
@@ -56,42 +52,42 @@ class S3Service {
     await s3.deleteObject(params).promise();
     return true;
   }
-  static async updateS3Image(file, existingKey) {
-    try {
-      // First delete the old image if exists
-      if (existingKey) {
-        await s3Client.send(
-          new DeleteObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME,
-            Key: existingKey,
-          })
-        );
-      }
+  // static async updateS3Image(file, existingKey) {
+  //   try {
+  //     // First delete the old image if exists
+  //     if (existingKey) {
+  //       await s3Client.send(
+  //         new DeleteObjectCommand({
+  //           Bucket: process.env.S3_BUCKET_NAME,
+  //           Key: existingKey,
+  //         })
+  //       );
+  //     }
 
-      // Upload new image
-      const fileExt = file.originalname.split(".").pop();
-      const newKey = `images/${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 9)}.${fileExt}`;
+  //     // Upload new image
+  //     const fileExt = file.originalname.split(".").pop();
+  //     const newKey = `images/${Date.now()}-${Math.random()
+  //       .toString(36)
+  //       .substring(2, 9)}.${fileExt}`;
 
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: newKey,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      };
+  //     const uploadParams = {
+  //       Bucket: process.env.S3_BUCKET_NAME,
+  //       Key: newKey,
+  //       Body: file.buffer,
+  //       ContentType: file.mimetype,
+  //     };
 
-      await s3Client.send(new PutObjectCommand(uploadParams));
+  //     await s3Client.send(new PutObjectCommand(uploadParams));
 
-      return {
-        url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${newKey}`,
-        key: newKey,
-      };
-    } catch (err) {
-      console.error("S3 Update Error:", err);
-      throw new Error("Failed to update image");
-    }
-  }
+  //     return {
+  //       url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${newKey}`,
+  //       key: newKey,
+  //     };
+  //   } catch (err) {
+  //     console.error("S3 Update Error:", err);
+  //     throw new Error("Failed to update image");
+  //   }
+  // }
 }
 
 module.exports = S3Service;
