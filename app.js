@@ -45,7 +45,7 @@ app.use(cors()); // Enable all CORS requests
 // OR for more control:
 app.use(
   cors({
-    origin: "https://vocal-kataifi-2271e2.netlify.app", // Your Angular dev server
+    origin: "https://grace-minsitries.netlify.app", // Your Angular dev server
   })
 );
 
