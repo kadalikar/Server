@@ -43,11 +43,13 @@ app.use(express.json());
 
 app.use(cors()); // Enable all CORS requests
 // OR for more control:
-app.use(
-  cors({
-    origin: "https://grace-minsitries.netlify.app", // Your Angular dev server
-  })
-);
+app.use(function(req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
 
 // Routes
 app.use("/api/movies", movieRoutes);
