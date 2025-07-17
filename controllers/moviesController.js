@@ -132,7 +132,9 @@ exports.sheet = async (req, res) => {
       },
     });
 
-    res.status(200).send("Successfully submitted! Thank you!");
+      res.status(200).json({
+      success: "Successfully submitted! Thank you!",
+    })
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send(`Error processing your request: ${error.message}`);
