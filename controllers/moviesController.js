@@ -1,6 +1,7 @@
 const Movie = require("../models/Movie");
 const s3Service = require("../services/s3.service");
 const { google } = require("googleapis");
+const path = require('path');
 exports.getMovies = async (req, res) => {
   try {
     const movies = await Movie.find().sort("-createdAt");
@@ -91,45 +92,85 @@ exports.deleteMovie = async (req, res) => {
   }
 };
 
+
+
 exports.sheet = async (req, res) => {
-  const { name, email, query, message } = req.body;
+  try {
+    const { name, email, query, message } = req.body;
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile: "credentials.json",
-    scopes: "https://www.googleapis.com/auth/spreadsheets",
-  });
+    // Better path handling for credentials
+    const credentialsPath = path.join(__dirname, 'credentials.json');
+    
+    // Auth setup with error handling
+    const auth = new google.auth.GoogleAuth({
+      keyFile: credentialsPath,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
 
-  // Create client instance for auth
-  const client = await auth.getClient();
+    const client = await auth.getClient();
+    const googleSheets = google.sheets({ version: "v4", auth: client });
 
-  // Instance of Google Sheets API
-  const googleSheets = google.sheets({ version: "v4", auth: client });
+    const spreadsheetId = "1ikNgIj0C25QEPWToe4MiCB081eoRMxwTM72MJN_mqk8";
 
-  const spreadsheetId = "1ikNgIj0C25QEPWToe4MiCB081eoRMxwTM72MJN_mqk8";
+    // Append data to sheet
+    await googleSheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: "Sheet1!A:D",  // Changed to A:D to match 4 columns
+      valueInputOption: "USER_ENTERED",
+      resource: {
+        values: [[name, email, query, message]],
+      },
+    });
 
-  // Get metadata about spreadsheet
-  const metaData = await googleSheets.spreadsheets.get({
-    auth,
-    spreadsheetId,
-  });
-
-  // Read rows from spreadsheet
-  const getRows = await googleSheets.spreadsheets.values.get({
-    auth,
-    spreadsheetId,
-    range: "Sheet1!A:A",
-  });
-
-  // Write row(s) to spreadsheet
-  await googleSheets.spreadsheets.values.append({
-    auth,
-    spreadsheetId,
-    range: "Sheet1!A:B",
-    valueInputOption: "USER_ENTERED",
-    resource: {
-      values: [[name, email, query, message]],
-    },
-  });
-
-  res.send("Successfully submitted! Thank you!");
+    res.status(200).send("Successfully submitted! Thank you!");
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
 };
+
+
+
+// duplicate
+// exports.sheet = async (req, res) => {
+//   const { name, email, query, message } = req.body;
+
+//   const auth = new google.auth.GoogleAuth({
+//     keyFile: "credentials.json",
+//     scopes: "https://www.googleapis.com/auth/spreadsheets",
+//   });
+
+//   // Create client instance for auth
+//   const client = await auth.getClient();
+
+//   // Instance of Google Sheets API
+//   const googleSheets = google.sheets({ version: "v4", auth: client });
+
+//   const spreadsheetId = "1ikNgIj0C25QEPWToe4MiCB081eoRMxwTM72MJN_mqk8";
+
+//   // Get metadata about spreadsheet
+//   const metaData = await googleSheets.spreadsheets.get({
+//     auth,
+//     spreadsheetId,
+//   });
+
+//   // Read rows from spreadsheet
+//   const getRows = await googleSheets.spreadsheets.values.get({
+//     auth,
+//     spreadsheetId,
+//     range: "Sheet1!A:A",
+//   });
+
+//   // Write row(s) to spreadsheet
+//   await googleSheets.spreadsheets.values.append({
+//     auth,
+//     spreadsheetId,
+//     range: "Sheet1!A:B",
+//     valueInputOption: "USER_ENTERED",
+//     resource: {
+//       values: [[name, email, query, message]],
+//     },
+//   });
+
+//   res.send("Successfully submitted! Thank you!");
+// };
