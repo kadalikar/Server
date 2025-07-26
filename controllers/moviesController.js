@@ -2,6 +2,7 @@ const Movie = require("../models/Movie");
 const s3Service = require("../services/s3.service");
 const { google } = require("googleapis");
 require("dotenv").config();
+
 exports.getMovies = async (req, res) => {
   const movies = await Movie.find().sort("-createdAt");
   res.json({

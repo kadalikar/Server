@@ -36,7 +36,6 @@ const cors = require("cors");
 
 const movieRoutes = require("./routes/moviesRouter");
 const loginRoute = require("./routes/loginRouter");
-
 const globalHandler = require("./controllers/errorHandler");
 const AppError = require("./utilis/AppError");
 const app = express();
@@ -58,11 +57,11 @@ app.use(function (req, res, next) {
 // Routes
 app.use("/api/movies", movieRoutes);
 
-app.use("/login", loginRoute);
+// app.use("/api/login", loginRoute);ks
 
-// app.all("*", (req, res, next) => {
-//   next(AppError(`cant find the route ${req.originalUrl}`));
-// });
+app.all("*", (req, res, next) => {
+  next(new AppError(`cant find the route ${req.originalUrl}`));
+});
 
 app.use(globalHandler);
 
