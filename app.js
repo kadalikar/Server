@@ -35,24 +35,37 @@ const express = require("express");
 const cors = require("cors");
 
 const movieRoutes = require("./routes/moviesRouter");
+const loginRoute = require("./routes/loginRouter");
 
+const globalHandler = require("./controllers/errorHandler");
+const AppError = require("./utilis/AppError");
 const app = express();
 
+console.log("Current environment:", process.env.NODE_ENV);
 // Middleware
 app.use(express.json());
 
 app.use(cors()); // Enable all CORS requests
 // OR for more control:
-app.use(
-  cors({
-    origin: "https://vocal-kataifi-2271e2.netlify.app", // Your Angular dev server
-  })
-);
+app.use(function (req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
+});
 
 // Routes
 app.use("/api/movies", movieRoutes);
 
-console.log(movieRoutes);
+app.use("/login", loginRoute);
+
+// app.all("*", (req, res, next) => {
+//   next(AppError(`cant find the route ${req.originalUrl}`));
+// });
+
+app.use(globalHandler);
+
 // Error handling
 // app.use(errorHandler);
 

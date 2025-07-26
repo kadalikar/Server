@@ -1,18 +1,14 @@
 const Movie = require("../models/Movie");
 const s3Service = require("../services/s3.service");
 const { google } = require("googleapis");
+require("dotenv").config();
 exports.getMovies = async (req, res) => {
-  try {
-    const movies = await Movie.find().sort("-createdAt");
-    res.json({
-      success: true,
-      count: movies.length,
-      data: movies,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
+  const movies = await Movie.find().sort("-createdAt");
+  res.json({
+    success: true,
+    count: movies.length,
+    data: movies,
+  });
 };
 exports.createMovie = async (req, res) => {
   try {
@@ -45,38 +41,38 @@ exports.createMovie = async (req, res) => {
   }
 };
 
-exports.updateMovie = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, rating } = req.body;
-    const updateData = {};
+// exports.updateMovie = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { title, rating } = req.body;
+//     const updateData = {};
 
-    // Dynamic $set object (ignores undefined fields)
-    if (title !== undefined) updateData.title = title;
-    if (rating !== undefined) updateData.rating = rating;
+//     // Dynamic $set object (ignores undefined fields)
+//     if (title !== undefined) updateData.title = title;
+//     if (rating !== undefined) updateData.rating = rating;
 
-    // Handle image upload
-    if (req.file) {
-      const movie = await Movie.findById(id);
-      const { url, key } = await s3Service.updateS3Image(
-        req.file,
-        movie?.imageKey
-      );
-      updateData.imageUrl = url;
-      updateData.imageKey = key;
-    }
+//     // Handle image upload
+//     if (req.file) {
+//       const movie = await Movie.findById(id);
+//       const { url, key } = await s3Service.updateS3Image(
+//         req.file,
+//         movie?.imageKey
+//       );
+//       updateData.imageUrl = url;
+//       updateData.imageKey = key;
+//     }
 
-    const updatedMovie = await Movie.findByIdAndUpdate(
-      id,
-      { $set: updateData }, // Only updates provided fields
-      { new: true, runValidators: true }
-    );
+//     const updatedMovie = await Movie.findByIdAndUpdate(
+//       id,
+//       { $set: updateData }, // Only updates provided fields
+//       { new: true, runValidators: true }
+//     );
 
-    res.status(200).json({ success: true, data: updatedMovie });
-  } catch (err) {
-    handleUpdateError(res, err); // Reusable error handler
-  }
-};
+//     res.status(200).json({ success: true, data: updatedMovie });
+//   } catch (err) {
+//     handleUpdateError(res, err); // Reusable error handler
+//   }
+// };
 
 exports.deleteMovie = async (req, res) => {
   try {
@@ -92,44 +88,91 @@ exports.deleteMovie = async (req, res) => {
 };
 
 exports.sheet = async (req, res) => {
-  const { name, email, query, message } = req.body;
+  try {
+    const { name, email, query, message } = req.body;
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile: "credentials.json",
-    scopes: "https://www.googleapis.com/auth/spreadsheets",
-  });
+    // Auth setup with error handling
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        type: process.env.GOOGLE_SERVICE_ACCOUNT_TYPE,
+        project_id: process.env.GOOGLE_PROJECT_ID,
+        private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        auth_uri: process.env.GOOGLE_AUTH_URI,
+        token_uri: process.env.GOOGLE_TOKEN_URI,
+        auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_CERT_URL,
+        client_x509_cert_url: process.env.GOOGLE_CLIENT_CERT_URL,
+      },
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
 
-  // Create client instance for auth
-  const client = await auth.getClient();
+    const client = await auth.getClient();
+    const googleSheets = google.sheets({ version: "v4", auth: client });
 
-  // Instance of Google Sheets API
-  const googleSheets = google.sheets({ version: "v4", auth: client });
+    const spreadsheetId = "1ikNgIj0C25QEPWToe4MiCB081eoRMxwTM72MJN_mqk8";
 
-  const spreadsheetId = "1ikNgIj0C25QEPWToe4MiCB081eoRMxwTM72MJN_mqk8";
+    // Append data to sheet
+    await googleSheets.spreadsheets.values.append({
+      auth,
+      spreadsheetId,
+      range: "Sheet1!A:D", // Changed to A:D to match 4 columns
+      valueInputOption: "USER_ENTERED",
+      resource: {
+        values: [[name, email, query, message]],
+      },
+    });
 
-  // Get metadata about spreadsheet
-  const metaData = await googleSheets.spreadsheets.get({
-    auth,
-    spreadsheetId,
-  });
-
-  // Read rows from spreadsheet
-  const getRows = await googleSheets.spreadsheets.values.get({
-    auth,
-    spreadsheetId,
-    range: "Sheet1!A:A",
-  });
-
-  // Write row(s) to spreadsheet
-  await googleSheets.spreadsheets.values.append({
-    auth,
-    spreadsheetId,
-    range: "Sheet1!A:B",
-    valueInputOption: "USER_ENTERED",
-    resource: {
-      values: [[name, email, query, message]],
-    },
-  });
-
-  res.send("Successfully submitted! Thank you!");
+    res.status(200).json({
+      success: "Successfully submitted! Thank you!",
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send(`Error processing your request: ${error.message}`);
+  }
 };
+
+// duplicate
+// exports.sheet = async (req, res) => {
+//   const { name, email, query, message } = req.body;
+
+//   const auth = new google.auth.GoogleAuth({
+//     keyFile: "credentials.json",
+//     scopes: "https://www.googleapis.com/auth/spreadsheets",
+//   });
+
+//   // Create client instance for auth
+//   const client = await auth.getClient();
+
+//   // Instance of Google Sheets API
+//   const googleSheets = google.sheets({ version: "v4", auth: client });
+
+//   const spreadsheetId = "1ikNgIj0C25QEPWToe4MiCB081eoRMxwTM72MJN_mqk8";
+
+//   // Get metadata about spreadsheet
+//   const metaData = await googleSheets.spreadsheets.get({
+//     auth,
+//     spreadsheetId,
+//   });
+
+//   // Read rows from spreadsheet
+//   const getRows = await googleSheets.spreadsheets.values.get({
+//     auth,
+//     spreadsheetId,
+//     range: "Sheet1!A:A",
+//   });
+
+//   // Write row(s) to spreadsheet
+//   await googleSheets.spreadsheets.values.append({
+//     auth,
+//     spreadsheetId,
+//     range: "Sheet1!A:B",
+//     valueInputOption: "USER_ENTERED",
+//     resource: {
+//       values: [[name, email, query, message]],
+//     },
+//   });
+
+//   res.send("Successfully submitted! Thank you!");
+// };

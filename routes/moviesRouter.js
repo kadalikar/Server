@@ -14,7 +14,6 @@ const upload = require("../config/multer.config");
 const {
   createMovie,
   getMovies,
-  updateMovie,
   deleteMovie,
 } = require("../controllers/moviesController");
 const googleSheet = require("../controllers/moviesController");
@@ -30,9 +29,6 @@ router
   )
   .get(getMovies);
 
-router
-  .route("/:id")
-  .put(upload.single("poster"), updateMovie)
-  .delete(deleteMovie);
+router.route("/:id").delete(deleteMovie);
 
 module.exports = router;
