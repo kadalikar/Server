@@ -13,6 +13,7 @@ exports.getMovies = async (req, res) => {
 };
 exports.createMovie = async (req, res) => {
   try {
+    console.log(req.body);
     const { title, rating, year, genre } = req.body;
 
     if (!req.file) {
