@@ -18,25 +18,23 @@ const movieSchema = new mongoose.Schema(
     year: {
       type: Number,
       required: [true, "Release year is required"],
-      min: [1900, "Year must be after 1900"],
-      max: [new Date().getFullYear(), "Year cannot be in the future"],
     },
     genre: {
       type: [String],
       required: true,
-      enum: {
-        values: [
-          "Action",
-          "Comedy",
-          "Drama",
-          "Horror",
-          "Sci-Fi",
-          "Thriller",
-          "Romance",
-          "Documentary",
-        ],
-        message: "{VALUE} is not a valid genre",
-      },
+      // enum: {
+      //   values: [
+      //     "Action",
+      //     "Comedy",
+      //     "Drama",
+      //     "Horror",
+      //     "Sci-Fi",
+      //     "Thriller",
+      //     "Romance",
+      //     "Documentary",
+      //   ],
+      //   message: "{VALUE} is not a valid genre",
+      // },
     },
     imageUrl: {
       type: String,

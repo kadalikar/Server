@@ -1,22 +1,19 @@
 const Movie = require("../models/Movie");
 const s3Service = require("../services/s3.service");
 const { google } = require("googleapis");
-require('dotenv').config();
+require("dotenv").config();
+
 exports.getMovies = async (req, res) => {
-  try {
-    const movies = await Movie.find().sort("-createdAt");
-    res.json({
-      success: true,
-      count: movies.length,
-      data: movies,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
+  const movies = await Movie.find().sort("-createdAt");
+  res.json({
+    success: true,
+    count: movies.length,
+    data: movies,
+  });
 };
 exports.createMovie = async (req, res) => {
   try {
+    console.log(req.body);
     const { title, rating, year, genre } = req.body;
 
     if (!req.file) {
@@ -92,20 +89,17 @@ exports.deleteMovie = async (req, res) => {
   }
 };
 
-
-
 exports.sheet = async (req, res) => {
   try {
     const { name, email, query, message } = req.body;
- 
-    
+
     // Auth setup with error handling
     const auth = new google.auth.GoogleAuth({
       credentials: {
         type: process.env.GOOGLE_SERVICE_ACCOUNT_TYPE,
         project_id: process.env.GOOGLE_PROJECT_ID,
         private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
         client_id: process.env.GOOGLE_CLIENT_ID,
         auth_uri: process.env.GOOGLE_AUTH_URI,
@@ -113,7 +107,7 @@ exports.sheet = async (req, res) => {
         auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_CERT_URL,
         client_x509_cert_url: process.env.GOOGLE_CLIENT_CERT_URL,
       },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
 
     const client = await auth.getClient();
@@ -125,23 +119,21 @@ exports.sheet = async (req, res) => {
     await googleSheets.spreadsheets.values.append({
       auth,
       spreadsheetId,
-      range: "Sheet1!A:D",  // Changed to A:D to match 4 columns
+      range: "Sheet1!A:D", // Changed to A:D to match 4 columns
       valueInputOption: "USER_ENTERED",
       resource: {
         values: [[name, email, query, message]],
       },
     });
 
-      res.status(200).json({
+    res.status(200).json({
       success: "Successfully submitted! Thank you!",
-    })
+    });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send(`Error processing your request: ${error.message}`);
   }
 };
-
-
 
 // duplicate
 // exports.sheet = async (req, res) => {
