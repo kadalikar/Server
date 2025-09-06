@@ -11,10 +11,26 @@ exports.getMovies = async (req, res) => {
     data: movies,
   });
 };
+exports.getMovieById = async (req, res, next) => {
+  try {
+    const movies = await Movie.findByIdAndUpdate(req.params.id);
+
+    if (!movies) {
+      return res.status(400).json({ error: "Movie not available" });
+    }
+    res.status(200).json({
+      success: true,
+      data: movies,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 exports.createMovie = async (req, res) => {
   try {
     console.log(req.body);
-    const { title, rating, year, genre } = req.body;
+    const { title, rating, year, genre, completed, percentage } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: "Please upload a movie poster" });
@@ -31,6 +47,8 @@ exports.createMovie = async (req, res) => {
       genre: Array.isArray(genre) ? genre : [genre],
       imageUrl: url,
       imageKey: key,
+      percentage: percentage,
+      completed: completed,
     });
 
     res.status(200).json({
@@ -76,11 +94,30 @@ exports.createMovie = async (req, res) => {
 //   }
 // };
 
+exports.updateMovie = async (req, res) => {
+  try {
+    const { id } = req.params.id;
+    const { completed, percentage } = req.body;
+    const updateData = {};
+
+    if (completed !== undefined) updateData.completed = completed;
+    if (percentage !== undefined) updateData.percentage = percentage;
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      id,
+      { $set: updateData }, // Only updates provided fields
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ success: true, data: updatedMovie });
+  } catch (err) {
+    handleUpdateError(res, err); // Reusable error handler
+  }
+};
 exports.deleteMovie = async (req, res) => {
   try {
     const movie = await Movie.findByIdAndDelete(req.params.id);
 
-    res.status(400).json({
+    res.status(200).json({
       status: "success",
       movies: movie,
     });

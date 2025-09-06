@@ -43,15 +43,15 @@ const movieSchema = new mongoose.Schema(
       type: String,
     },
     completed: {
-    type: Boolean,
-    default: false // Default value for new documents
-  },
-  percentage: {
-    type: Number,
-    default: 0,    // Default value for new documents
-    min: 0,        // Optional validation
-    max: 100       // Optional validation
-  },
+      type: Boolean,
+      default: true, // Default value for new documents
+    },
+    percentage: {
+      type: Number,
+      default: 100, // Default value for new documents
+      min: 0, // Optional validation
+      max: 100, // Optional validation
+    },
     createdAt: {
       type: Date,
       default: Date.now,

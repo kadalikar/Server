@@ -15,6 +15,7 @@ const {
   createMovie,
   getMovies,
   deleteMovie,
+  getMovieById,
 } = require("../controllers/moviesController");
 const googleSheet = require("../controllers/moviesController");
 const validateMiddleware = require("../middleware/validateMovie");
@@ -28,6 +29,8 @@ router
     createMovie
   )
   .get(getMovies);
+
+router.route("/:id").get(getMovieById);
 
 router.route("/:id").delete(deleteMovie);
 
