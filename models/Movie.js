@@ -16,27 +16,25 @@ const movieSchema = new mongoose.Schema(
       max: [10, "Rating cannot exceed 10"],
     },
     year: {
-      type: Number,
+      type: String,
       required: [true, "Release year is required"],
-      min: [1900, "Year must be after 1900"],
-      max: [new Date().getFullYear(), "Year cannot be in the future"],
     },
     genre: {
       type: [String],
       required: true,
-      enum: {
-        values: [
-          "Action",
-          "Comedy",
-          "Drama",
-          "Horror",
-          "Sci-Fi",
-          "Thriller",
-          "Romance",
-          "Documentary",
-        ],
-        message: "{VALUE} is not a valid genre",
-      },
+      // enum: {
+      //   values: [
+      //     "Action",
+      //     "Comedy",
+      //     "Drama",
+      //     "Horror",
+      //     "Sci-Fi",
+      //     "Thriller",
+      //     "Romance",
+      //     "Documentary",
+      //   ],
+      //   message: "{VALUE} is not a valid genre",
+      // },
     },
     imageUrl: {
       type: String,
@@ -44,6 +42,16 @@ const movieSchema = new mongoose.Schema(
     imageKey: {
       type: String,
     },
+    completed: {
+    type: Boolean,
+    default: false // Default value for new documents
+  },
+  percentage: {
+    type: Number,
+    default: 0,    // Default value for new documents
+    min: 0,        // Optional validation
+    max: 100       // Optional validation
+  },
     createdAt: {
       type: Date,
       default: Date.now,
