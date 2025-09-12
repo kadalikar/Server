@@ -4,7 +4,27 @@ const { google } = require("googleapis");
 require("dotenv").config();
 
 exports.getMovies = async (req, res) => {
-  const movies = await Movie.find().sort("-createdAt");
+  const { completed } = req.query;
+  // const page = req.query.page * 1 || 1;
+  // const limit = req.query.limit * 1 || 10;
+  // const skip = (page - 1) * limit;
+  // query = query.skip(skip).limit(limit);
+
+  // Execute query
+  // build filter condition dynamically
+  let matchStage = {};
+  if (completed !== undefined) {
+    matchStage.completed = completed === "true"; // converts string to boolean
+  }
+  // const tours = await query;
+
+  const movies = await Movie.aggregate([
+    { $match: matchStage },
+    { $project: { imageUrl: 1, title: 1 } },
+    { $sort: { createdAt: -1 } }, // optional
+  ]);
+
+  // const movies = await Movie.find().sort("-createdAt");
   res.json({
     success: true,
     count: movies.length,
